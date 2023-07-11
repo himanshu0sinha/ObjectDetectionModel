@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: gayatri7mehta/front:0.0.4 # TODO change IMG_URL to your frontend image in dockerhub or ECR
+        ports:
+        - containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 8082
+      targetPort: 8082
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  replicas: 1
+  serviceName: mongo
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      name: mongo
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:4.4
+        ports:
+        - name: mongo
+          containerPort: 27017
+        volumeMounts:
+          - name: mongo-storage
+            mountPath: "/data/db"
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: gp2
+        resources:
+          requests:
+            storage: 3Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolo5
+spec:
+  selector:
+    matchLabels:
+      app: yolo5
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: yolo5
+    spec:
+      containers:
+      - name: yolo5
+        image: gayatri7mehta/yolo5:0.0.6 # TODO change IMG_URL to your yolo5 image in dockerhub or ECR
+        ports:
+        - containerPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolo5
+spec:
+  selector:
+    app: yolo5
+  ports:
+    - port: 8081
+      targetPort: 8081
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polybot
+spec:
+  selector:
+    matchLabels:
+      app: polybot
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: polybot
+    spec:
+      containers:
+      - name: polybot
+        image: gayatri7mehta/telebot:0.0.2 # TODO change IMG_URL to your polybot image in dockerhub or ECR
